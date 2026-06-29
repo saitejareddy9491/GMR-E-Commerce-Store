@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Authentication | GMR E-Commerce Store</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <div class="logo-dot"></div>
+        GMR E-Commerce Store
+      </a>
+      <nav class="nav-menu">
+        <a href="/" class="nav-link">Store</a>
+        <a href="/admin.html" class="nav-link" id="admin-nav" style="display: none;">Admin Panel</a>
+      </nav>
+      <div class="nav-actions">
+        <span id="user-badge" style="display: none; font-weight: 600; font-size: 0.9rem; color: var(--text-muted);"></span>
+        <a href="/auth.html" id="auth-btn" class="btn btn-secondary active">Sign In</a>
+        <button id="logout-btn" class="btn btn-danger" style="display: none;">Sign Out</button>
+
+        <a href="/cart.html" class="cart-icon-container">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <div class="cart-badge" id="cart-badge-count">0</div>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Auth Layout -->
+  <main class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2 id="auth-title">Welcome Back</h2>
+        <p id="auth-subtitle">Verify your neural credentials to access the store</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login">Login</div>
+        <div class="auth-tab" id="tab-register">Register</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" placeholder="Enter username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary auth-btn">Authorize Session</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" style="display: none;">
+        <div class="form-group">
+          <label for="reg-username">Username</label>
+          <input type="text" id="reg-username" placeholder="Create username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" placeholder="Enter email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="Create secure password" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary auth-btn">Synthesize Account</button>
+      </form>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="logo" style="justify-content: center;">
+        <div class="logo-dot"></div>
+        GMR E-Commerce Store
+      </div>
+      <div class="footer-links">
+        <a href="/">Catalog</a>
+        <a href="/cart.html">Cart</a>
+        <a href="/auth.html">Account</a>
+      </div>
+      <div>&copy; 2026 GMR E-Commerce Store Corp. All rights reserved. Powered by Antigravity.</div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabLogin = document.getElementById('tab-login');
+      const tabRegister = document.getElementById('tab-register');
+      const loginForm = document.getElementById('login-form');
+      const registerForm = document.getElementById('register-form');
+      const authTitle = document.getElementById('auth-title');
+      const authSubtitle = document.getElementById('auth-subtitle');
+
+      // Check if user is already logged in
+      if (Auth.isLoggedIn()) {
+        window.location.href = '/';
+        return;
+      }
+
+      tabLogin.addEventListener('click', () => {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        authTitle.textContent = 'Welcome Back';
+        authSubtitle.textContent = 'Verify your neural credentials to access the store';
+      });
+
+      tabRegister.addEventListener('click', () => {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        registerForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        authTitle.textContent = 'Create Identity';
+        authSubtitle.textContent = 'Synthesize a new user profile on Aether networks';
+      });
+
+      // Submit Login
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        try {
+          const res = await Api.login(username, password);
+          Auth.setSession(res.token, res.user);
+          App.showToast('Authentication approved. Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } catch (err) {
+          App.showToast(err.message || 'Authentication denied.', 'error');
+        }
+      });
+
+      // Submit Register
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+
+        try {
+          const res = await Api.register(username, email, password);
+          Auth.setSession(res.token, res.user);
+          App.showToast('Account successfully initialized. Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } catch (err) {
+          App.showToast(err.message || 'Identity initialization failed.', 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
